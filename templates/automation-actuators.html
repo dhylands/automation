@@ -1,0 +1,61 @@
+{% extends "automation-layout.html" %}
+{% block title %}{{title}} {% if category %}({{category}}){% else %}(All){% endif %}{% endblock %}
+{% block body %}
+<form method="post">
+    <div style="overflow:auto;">
+        <table class="bordered">
+            <tr>
+                <th>Control</th>
+                <th>Name{% if title == 'Actuators' %}(s){% endif %}</th>
+                <th>Controller</th>
+                <th>ID</th>
+                {% if not category %}
+                <th>Category</th>
+                {% endif %}
+                <th>State</th>
+                <th>Description</th>
+                <th>Order</th>
+                <th>Action</th>
+            </tr>
+            {% for item in actuators %}
+            {% set actuator_name, actuator = item[0], item[1] %}
+            <tr>
+                <td>
+                    <input type="submit" name="toggle-{{actuator_name}}" 
+                    value="Turn {% if actuator.State() %}Off{% else %}On{% endif %}"/>
+                </td> 
+                <td>{{actuator_name}}</td>
+                <td><a
+                    href="{{url_for('automation_show_controller', 
+                    controller_name=actuator.ControllerName())}}">{{actuator.ControllerName()}}</a></td>
+                <td>{{actuator.ID()}}</td>
+                {% if not category %}
+                <td>{{actuator.Category()}}</td>
+                {% endif %}
+                <td>{{actuator.StateStr()}}</td>
+                <td>{{actuator.Description()}}</td>
+                <td>{{actuator.Order()}}</td>
+                <td>
+                    <input type="submit" name="edit-{{actuator_name}}" 
+                    value="Edit"/>
+                    <input type="submit" name="del-{{actuator_name}}" value="Delete" 
+                    onclick="return confirm('Are you sure you want to DELETE Actuator: ' + '{{actuator_name}}' + '?');"/>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="footer">
+        <br>
+        <input type="submit" name="add" 
+        value="Add New Actuator for Controller:"/>
+        <select name="controller_name">
+            {% for controller_name in controller_names %}
+            <option value="{{controller_name}}">{{controller_name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <input type="hidden" name="next" value="{{next or ''}}"/> 
+</form>
+{% endblock %}
+

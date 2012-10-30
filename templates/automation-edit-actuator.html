@@ -1,0 +1,23 @@
+{% extends "automation-layout.html" %}
+{% block title %}Actuator - {{actuator.Name()}}{% endblock %}
+{% block body %}
+<form method="post">
+    <table>
+        {% for item in actuator.ConfigItems() %}
+        <tr>
+            <td>{{item}}:</td>
+            <td><input type="text" name="{{item}}" 
+            {% if item == 'Controller' %}
+            readonly="readonly"
+            {% endif %}
+            value="{{actuator.GetConfig(item)}}"/></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <input type="submit" name="save" value="Save"/>
+    <input type="submit" name="cancel" value="Cancel"/>
+    <input type="hidden" name="next" value="{{next or ''}}">
+</form>
+{% endblock %}
+

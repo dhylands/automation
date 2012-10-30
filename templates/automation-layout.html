@@ -1,0 +1,57 @@
+    <!doctype html>
+<html>
+<head>
+    <title>Automation {% block title %}{% endblock %}</title>
+</head>
+<link rel="stylesheet" type="text/css" 
+href="{{url_for('static', filename='automation.css')}}"/>
+<body>
+<div id="sidebar" class="left col">
+    <div class="header row">
+    </div>
+    <div class="nav row">
+        <ul>
+            <li><a href="/automation/controllers">Controllers</a></li>
+            {% for category in ControllerCategories() %}
+                <li class="category"><a href="/automation/controllers/category/{{category}}">{{category}}</a></li>
+            {% endfor %} 
+            <li><a href="/automation/actuators">Actuators</a></li>
+            {% for category in ActuatorCategories() %}
+                <li class="category"><a href="/automation/actuators/category/{{category}}">{{category}}</a></li>
+            {% endfor %} 
+            <li><a href="/automation/aliases">Aliases</a></li>
+            {% for category in ActuatorCategories() %}
+                <li class="category"><a href="/automation/aliases/category/{{category}}">{{category}}</a></li>
+            {% endfor %} 
+            <li><a href="/automation/config">Config</a></li>
+        </ul>
+    </div>
+    <div class="footer row">
+    </div>
+</div>
+<div class="right col">
+    <div class="header row">
+        <h1>Automation {{self.title()}}</h1>
+    </div>
+    <div class="body row scroll-y">
+        {% block body %}{% endblock %}
+    </div>
+    <div class="footer row">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% if messages %}
+            <ul class="flashes">
+            {% for category, message in messages %}
+                {% if category == 'error' %}
+                <li class="error"><strong>Error: {{message}}</strong></li>
+                {% else %}
+                <li>{{message}}</li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+    </div>
+</div>
+</body>
+</html>
+

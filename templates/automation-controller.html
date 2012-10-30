@@ -1,0 +1,47 @@
+{% extends "automation-layout.html" %}
+{% block title %}Controller - {{controller.Name()}}{% endblock %}
+{% block body %}
+<h2>Controller</h2>
+<form method="post">
+    <table class="bordered">
+        <tr>
+            <th>Param</th>
+            <th>Value</th>
+        </tr>
+        {% for item in controller.Type().ControllerAllConfigItems() %}
+        <tr>
+            <td>{{item}}:</td>
+            <td>{{controller.GetConfig(item)}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <input type="submit" name="edit" value="Edit"/>
+    <input type="hidden"  name="next" value="{{next or ''}}">
+    <h2>Actuators</h2>
+    <table class="bordered">
+        <tr>
+            <th>Control</th>
+            <th>Name(s)</th>
+            <th>ID</th>
+            <th>Category</th>
+            <th>State</th>
+            <th>Description</th>
+            <th>Order</th>
+        </tr>
+        {% for actuator in controller.Actuators() %}
+        <tr>
+            <td>
+                <input type="submit" name="toggle-{{actuator.Name()}}" 
+                value="Turn {% if actuator.State() %}Off{% else %}On{% endif %}"/>
+            </td> 
+            <td>{{actuator.NamesAsStr()}}</td>
+            <td>{{actuator.ID()}}</td>
+            <td>{{actuator.Category()}}</td>
+            <td>{{actuator.StateStr()}}</td>
+            <td>{{actuator.Description()}}</td>
+            <td>{{actuator.Order()}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</form>
+{% endblock %}

@@ -1,0 +1,106 @@
+body { margin: 0; background-color: lightgray;}
+.row, .col { overflow: hidden; position: absolute; }
+.row { left: 0; right: 0; }
+.col { top: 0; bottom: 0; }
+.scroll-x { overflow-x: auto; }
+.scroll-y { overflow-y: auto; }
+
+.left.col
+{
+    width: 200px;
+}
+
+.right.col
+{
+    left: 200px; 
+    right: 0;
+}
+
+.header.row 
+{
+    height: 75px; top: 0;
+    padding-left: 10px;
+}
+
+.body.row
+{
+    top: 75px; bottom: 75px;
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.nav.row
+{
+    top: 75px; bottom: 75px;
+}
+
+.footer.row
+{
+    height: 75px; bottom: 0;
+}
+
+#sidebar ul
+{
+    margin: 10px;
+    padding: 0px;
+    list-style: none;
+}
+
+li.category
+{
+    padding-left: 20px;
+}
+
+#sidebar ul li a
+{
+    padding: 5px;
+    display: block;
+    color: black;
+    text-decoration: none;
+}
+
+#sidebar li a:hover
+{
+    background-color: grey;
+}
+
+.error
+{
+    color: red;
+}
+
+ul.flashes
+{
+    list-style: none;
+}
+
+table.bordered
+{
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    border-collapse: collapse;
+}
+
+table.bordered th
+{
+    border-color: black;
+    border-style: solid solid double;
+    border-width: 1px 1px 3px 1px;
+    padding: 4px;
+    background-color: #EEE;
+}
+
+table.bordered td
+{
+    border-color: #CCC;
+    border-style: solid;
+    border-width: 1px;
+    padding: 4px;
+}
+
+.padded
+{
+    padding-left: 10px;
+}
