@@ -8,10 +8,15 @@ _aliases = {}
 def Add(actuator):
     global _actuators
     global _aliases
-    actuator.config_dict['Names']= actuator.Name().split()
+    potential_aliases = NameToNames(actuator.config_dict['Name'])
+    actual_aliases = []
+    for alias in potential_aliases:
+        if alias not in _aliases:
+            _aliases[alias] = actuator
+            actual_aliases.append(alias)
+    actuator.config_dict['Names'] = actual_aliases
+    actuator.config_dict['Name'] = NamesToName(actual_aliases)
     _actuators[actuator.Name()] = actuator
-    for alias in actuator.Names():
-        _aliases[alias] = actuator
     actuator.SetOrderIfNeeded()
     AutomationConfig.Write()
 
@@ -31,6 +36,12 @@ def Find(name):
         return _actuators[name]
     if name in _aliases:
         return _aliases[name]
+
+def NameToNames(name):
+    return name.replace(',', ' ').split()
+
+def NamesToName(names):
+    return ', '.join(names)
 
 def NextOrder():
     global _order
@@ -64,7 +75,8 @@ def ActuatorCategories():
     result = set()
     for actuator_name in _actuators:
         actuator = _actuators[actuator_name]
-        result.add(actuator.Category())
+        if actuator.Category():
+            result.add(actuator.Category())
     return sorted(result)
 
 def ActuatorCountForController(controller):
@@ -137,6 +149,9 @@ class Actuator:
             return self.config_dict[name]
         return ''
 
+    def GetConfigDict(self):
+        return self.config_dict
+
     def ID(self):
         return self.Controller().ActuatorID(self)
 
@@ -157,6 +172,9 @@ class Actuator:
 
     def StateStr(self):
         return 'On' if self.State() else 'Off';
+
+    def Validate(self, config_dict, error_dict):
+        return self.Controller().ValidateActuator(self, config_dict, error_dict)
 
     def Dump(self):
         print "Actuator:", self.Name()

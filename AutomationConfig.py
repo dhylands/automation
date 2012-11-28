@@ -38,6 +38,11 @@ class InvalidActuatorConfig(Exception):
 def Config():
     return _config
 
+def SetConfigFilename(configFilename):
+    global _config_name
+    _config_name = configFilename
+    print 'Config Filename set to', _config_name
+
 def Read():
     """Reads the configuration file and creates all of the various objects."""
     global _config_being_read
@@ -161,10 +166,13 @@ def _WriteControllers():
 def _ReadActuators():
     """Reads in the Configuration file and creates the Actuator objects"""
     import Controller
+    import Actuator
     for section in _config.sections():
         if section[0:9] == 'Actuator:':
             actuator_name = section[9:].strip()
-            actuator_names = actuator_name.split()
+            actuator_names = Actuator.NameToNames(actuator_name)
+            print 'ReadActuators: actuator_name =', actuator_name
+            print 'ReadActuators: actuator_names =', actuator_names
             if not _config.has_option(section, 'controller'):
                 raise MissingActuatorController("Actuator: '%s' missing controller" % actuator_name)
             controller_name = _config.get(section, 'controller')
@@ -205,7 +213,7 @@ def _WriteActuators():
             for item in actuator.ConfigItems():
                 print '[Config]   ', item, '=', actuator.GetConfig(item)
 
-        section = 'Actuator: ' + ' '.join(actuator.Names())
+        section = 'Actuator: ' + actuator.Name()
         _config.add_section(section)
         for name in actuator.ConfigItems():
             if name != 'Name':

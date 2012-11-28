@@ -18,13 +18,10 @@ def Config():
     return AutomationConfig.Config()
 
 def AddActuator(controller, config_dict):
-    print 'automation.AddActuator'
-    print 'config_dict =', config_dict
-    controller.CreateActuator(config_dict)
+    return controller.CreateActuator(config_dict)
 
-def AddController(config_dict):
-    controller_type = ControllerType.Find(config_dict['type'])
-    controller_type.CreateController(config_dict)
+def AddController(controller_type, config_dict):
+    return controller_type.CreateController(config_dict)
 
 def DeleteActuator(actuator_name):
     actuator = Actuator.Find(actuator_name)
@@ -78,9 +75,8 @@ def ActuatorCategories():
 def ControllerCategories():
     return Controller.ControllerCategories()
 
-AutomationConfig.Read()
-
 if __name__ == '__main__':
+    AutomationConfig.Read()
     print "===== Controller Types ====="
     ControllerType.Dump()
     print "===== Controllers ====="

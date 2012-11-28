@@ -24,4 +24,8 @@ def PrintErrors(d):
         if d[item]:
             print 'Error:', item, '-', d[item]
 
-
+def StrippedCopy(d):
+    new_dict = d.copy()
+    for item in new_dict:
+        new_dict[item] = new_dict[item].strip()
+    return new_dict

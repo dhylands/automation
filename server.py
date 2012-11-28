@@ -9,15 +9,23 @@ import jinja2
 
 import collections
 
+import Actuator
 import automation
+import AutomationConfig
+import os
 
 import logging
-from DefaultDict import DefaultDict, ErrorFound
+from DefaultDict import DefaultDict, ErrorFound, StrippedCopy
 
-debug = True
+debug = False
 
 app = Flask(__name__)
 app.secret_key = 'automation secret'
+#app.config.from_object(__name__)
+
+CONFIG_FILE = 'automation.config'
+if 'CONFIG_FILE' in os.environ:
+    CONFIG_FILE = os.environ['CONFIG_FILE'];
 
 file_handler = logging.FileHandler('server.log')
 file_handler.setLevel(logging.DEBUG)
@@ -95,23 +103,25 @@ def automation_show_controller(controller_name):
 def automation_add_controller(controller_type_name):
     if debug: print 'automation_add_controller'
     error_dict = DefaultDict()
-    param = DefaultDict(request.form)
+    config_dict = StrippedCopy(request.form)
+    param = DefaultDict(config_dict)
     controller_type = automation.FindControllerType(controller_type_name)
     if not controller_type:
         flash("No controller type named '" + controller_type_name + "'", 'error')
         return redirect(url_for('automation_controllers'))
+    title = 'Add Controller for ' + controller_type.Name()
+    param['action'] = 'Add'
     if request.method == 'POST':
-        if 'add' in request.form:
-            del param['add']
-            controller_type.ValidateNewController(param, error_dict)
+        if 'action' in request.form:
+            del config_dict['action']
+            controller_type.ValidateNewController(config_dict, error_dict)
             if ErrorFound(error_dict):
-                return render_template('automation-add-controller.html', controller_type=controller_type, error=error_dict, param=param)
-            param['type'] = controller_type_name
-            automation.AddController(param)
-            flash('Added Controller: ' + param['name'])
-        return redirect(url_for('automation_controllers'))
-    param['Type'] = controller_type_name
-    return render_template('automation-add-controller.html', controller_type=controller_type, error=error_dict, param=param)
+                return render_template('automation-edit-controller.html', title=title, controller_type=controller_type, error=error_dict, param=param)
+            controller = automation.AddController(controller_type, param)
+            flash('Added Controller: ' + controller.Name())
+        return redirect_back('automation_controllers')
+    param['Type'] = controller_type.Name()
+    return render_template('automation-edit-controller.html', title=title, controller_type=controller_type, error=error_dict, param=param)
 
 @app.route('/automation/controllers/edit/<controller_name>', methods=['POST', 'GET'])
 def automation_edit_controller(controller_name):
@@ -121,17 +131,24 @@ def automation_edit_controller(controller_name):
     if not controller:
         flash("No controller named '" + controller_name + "'")
         return redirect(url_for('automation_controllers'))
+    controller_type = controller.Type()
+    title = 'Edit Controller - ' + controller.Name()
+    error_dict = DefaultDict()
     if request.method == 'POST':
-        print 'method == POST'
-        if 'save' in request.form:
-            controller_name = request.form['Name']
-            config_dict = request.form.copy()
-            del config_dict['save']
+        if 'action' in request.form:
+            config_dict = StrippedCopy(request.form)
+            param = DefaultDict(config_dict)
+            del config_dict['action']
+            controller.Validate(config_dict, error_dict)
+            if ErrorFound(error_dict):
+                return render_template('automation-edit-controller.html', title=title, controller_type=controller_type, next=next, param=param, error=error_dict)
             automation.EditController(controller, config_dict)
-            flash('Updated Controller ' + controller_name)
+            flash('Updated Controller: ' + controller.Name())
         return redirect(url_for('automation_controllers'))
         #return redirect_back('automation_controllers')
-    return render_template('automation-edit-controller.html', controller=controller, next=next)
+    param = controller.GetConfigDict()
+    param['action'] = 'Update'
+    return render_template('automation-edit-controller.html', title=title, controller_type=controller_type, next=next, param=param, error=error_dict)
 
 @app.route('/automation/actuator/<actuatorname>/<state>')
 def automation_actuator(actuatorname, state):
@@ -191,26 +208,26 @@ def automation_add_actuator(controller_name):
     if debug: print 'automation_add_actuator'
     next = get_redirect_target()
     error_dict = DefaultDict()
-    param = DefaultDict(request.form)
+    config_dict = StrippedCopy(request.form)
+    param = DefaultDict(config_dict)
     controller = automation.FindController(controller_name)
     if not controller:
         flash('Unable to find controller named ' + controller_name)
         return redirect_back('automation_actuators')
+    title = 'Add Actuator for ' + controller.Name()
+    param['action'] = 'Add'
     if request.method == 'POST':
-        if 'add' in request.form:
-            print "param =", param
-            flash(request.form)
-            del param['add']
-            param['Names'] = param['Names'].split(", ")
-            controller.ValidateNewActuator(param, error_dict)
+        if 'action' in request.form:
+            del config_dict['action']
+            controller.ValidateNewActuator(config_dict, error_dict)
             if ErrorFound(error_dict):
-                return render_template('automation-add-actuator.html', controller=controller, next=next, error=error_dict, param=param)
-            automation.AddActuator(controller, param)
-            flash('Added Actuator: ' + ' '.join(param['names']))
+                return render_template('automation-edit-actuator.html', title=title, controller=controller, next=next, error=error_dict, param=param)
+            actuator = automation.AddActuator(controller, config_dict)
+            flash('Added Actuator: ' + actuator.Names())
         return redirect_back('automation_actuators')
     param['Controller'] = controller.Name()
     param['Order'] = automation.NextOrder()
-    return render_template('automation-add-actuator.html', controller=controller, next=next, error=error_dict, param=param)
+    return render_template('automation-edit-actuator.html', title=title, controller=controller, next=next, error=error_dict, param=param)
 
 @app.route('/automation/actuators/edit/<actuator_name>', methods=['POST', 'GET'])
 def automation_edit_actuator(actuator_name):
@@ -220,18 +237,25 @@ def automation_edit_actuator(actuator_name):
     if not actuator:
         flash("No actuator named '" + actuator_name + "'")
         return redirect(url_for('automation_actuators'))
-    print 'actuator non-NULL'
+    controller = actuator.Controller()
+    title='Edit Actuator - ' + actuator.Name()
+    error_dict = DefaultDict()
     if request.method == 'POST':
-        print 'method == POST'
-        if 'save' in request.form:
-            actuator_name = request.form['Name']
-            config_dict = request.form.copy()
-            del config_dict['save']
+        if 'action' in request.form:
+            config_dict = StrippedCopy(request.form)
+            param = DefaultDict(config_dict)
+            del config_dict['action']
+            actuator.Validate(config_dict, error_dict)
+            if ErrorFound(error_dict):
+                return render_template('automation-edit-actuator.html', title=title, controller=controller, next=next, param=param, error=error_dict)
             automation.EditActuator(actuator, config_dict)
-            flash('Updated Actuator ' + actuator_name)
+            flash('Updated Actuator ' + actuator.Name())
         return redirect(url_for('automation_actuators'))
-    print 'not POST'
-    return render_template('automation-edit-actuator.html', actuator=actuator, next=next)
+    param = actuator.GetConfigDict()
+    param['action'] = 'Update'
+    return render_template('automation-edit-actuator.html', title=title, controller=controller, next=next, param=param, error=error_dict)
 
 if __name__ == '__main__':
+    AutomationConfig.SetConfigFilename(CONFIG_FILE)
+    AutomationConfig.Read()
     app.run(host='0.0.0.0', debug=True)

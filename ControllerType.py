@@ -8,6 +8,7 @@
 
 import Controller
 import Actuator
+from DefaultDict import ErrorFound
 
 _controller_type = {}
 
@@ -102,40 +103,49 @@ class ControllerType:
             items.append(config + ': ' + controller.GetConfig(config))
         return ', '.join(items)
 
-    def ValidateController(self, controller):
+    def ValidateController(self, controller, config_dict, error_dict):
         """Make sure that all of the required configration is present in a controller."""
-        return
+        controller_name = config_dict['Name'].strip()
+        if controller_name == '':
+            error_dict['Name'] = 'Must provide a controller name.'
+        elif ' ' in controller_name:
+            error_dict['Name'] = 'Controller name must not contain spaces.'
+        else:
+            test_controller = Controller.Find(controller_name)
+            if test_controller and (test_controller != controller):
+                error_dict['Name'] = 'Controller ' + controller_name + ' already exists.'
+        self.ValidateControllerParams(config_dict, error_dict)
 
     def ValidateNewController(self, config_dict, error_dict):
         """Make sure that the name and parameters are valid"""
-        controller_name = config_dict['Name']
-        if controller_name == '':
-            error_dict['Name'] = 'Must provide a controller name.'
-        elif Controller.Find(controller_name):
-            error_dict['Name'] = 'Controller ' + controller_name + ' already exists.'
-        self.ValidateControllerParams(config_dict, error_dict)
+        self.ValidateController(None, config_dict, error_dict)
 
     def ValidateControllerParams(self, config_dict, error_dict):
         """Make sure that all of the required configuration is present and valid"""
-        return True
+        print 'ValidateControllerParams not implemented for ControllerType', self.Name()
 
-    def ValidateNewActuator(self, config_dict, error_dict):
-        """Make sure that the name and parameters are valid"""
-        actuator_names = config_dict['Names']
-        if len(actuator_names) == 0:
-            error_dict['Names'] = 'Must provide actuator name(s).'
-        else:
-            actuator_name = ' '.join(actuator_names)
-            if Actuator.Find(actuator_name):
-                error_dict['Names'] = 'Actuator "' + actuator_names + '" already exists.'
-            else:
-                for alias in actuator_names:
-                    if Actuator.Find(alias):
-                        error_dict['Names'] = 'Actuator "' + alias + '" already exists.'
-        self.ValidateActuatorParams(config_dict, error_dict)
-
-    def ValidateActuatorParams(self, config_dict, error_dict):
+    def ValidateActuator(self, controller, actuator, config_dict, error_dict):
         """Make sure that all of the required configration is present in an actuator."""
+        actuator_name = config_dict['Name'].strip()
+        actuator_names = Actuator.NameToNames(actuator_name)
+        if (actuator_name == '') or (len(actuator_names) == 0):
+            error_dict['Name'] = 'Must provide actuator name(s).'
+            print 'actuator_name =', actuator_name
+            print 'actuator_names =', actuator_names
+        else:
+            for alias in actuator_names:
+                test_actuator = Actuator.Find(alias)
+                if test_actuator and (test_actuator != actuator):
+                    error_dict['Name'] = 'Actuator "' + alias + '" already exists.'
+        self.ValidateActuatorParams(controller, config_dict, error_dict)
+
+    def ValidateNewActuator(self, controller, config_dict, error_dict):
+        """Make sure that the name and parameters are valid"""
+        self.ValidateActuator(controller, None, config_dict, error_dict)
+
+    def ValidateActuatorParams(self, controller, config_dict, error_dict):
+        """Make sure that all of the required configration is present in an actuator."""
+        print 'ValidateActuatorParams not implemented for ControllerType', self.Name()
         return
 
     def ActuatorID(self, actuator):

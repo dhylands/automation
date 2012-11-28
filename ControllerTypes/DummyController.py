@@ -22,7 +22,7 @@ class DummyController(ControllerType):
             error_dict['A'] = 'Must be numeric'
             return
 
-    def ValidateActuatorParams(self, config_dict, error_dict):
+    def ValidateActuatorParams(self, controller, config_dict, error_dict):
         """Make sure that all of the required configuration is present and valid"""
         if ('Id' not in config_dict) or (config_dict['Id'] == ''):
             error_dict['Id'] = 'This parameter is required'

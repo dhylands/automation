@@ -104,3 +104,9 @@ table.bordered td
 {
     padding-left: 10px;
 }
+
+.noitems
+{
+    padding-top: 1em;
+    padding-left: 1em;
+}

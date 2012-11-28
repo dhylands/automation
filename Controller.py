@@ -34,7 +34,8 @@ def ControllerCategories():
     result = set()
     for controller_name in _controllers:
         controller = _controllers[controller_name]
-        result.add(controller.Category())
+        if controller.Category():
+            result.add(controller.Category())
     return sorted(result)
 
 def OrderedControllers(category=None):
@@ -58,9 +59,10 @@ class Controller:
 
     def Edit(self, new_config_dict):
         Delete(self, write_config=False)
-        config_items = self.Type().ControllerConfigItems()
+        config_items = self.Type().ControllerAllConfigItems()
         for item in new_config_dict:
             if item in config_items:
+                print 'Edit: Setting item', item, 'to', new_config_dict[item]
                 self.config_dict[item] = new_config_dict[item]
         Add(self)
 
@@ -94,8 +96,17 @@ class Controller:
     def Actuators(self):
         return Actuator.ActuatorsForController(self)
 
+    def Validate(self, config_dict, error_dict):
+        return self.controller_type.ValidateController(self, config_dict, error_dict)
+
+    def ValidateActuator(self, actuator, new_config_dict, error_dict):
+        return self.controller_type.ValidateActuator(self, actuator, new_config_dict, error_dict)
+
     def ValidateNewActuator(self, config_dict, error_dict):
-        return self.controller_type.ValidateNewActuator(config_dict, error_dict)
+        return self.controller_type.ValidateNewActuator(self, config_dict, error_dict)
+
+    def GetConfigDict(self):
+        return self.config_dict
 
     def GetConfig(self, name):
         if name in self.config_dict:

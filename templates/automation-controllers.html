@@ -2,39 +2,45 @@
 {% block title %}Controllers {% if category %}({{category}}){% else %}(All){% endif %}{% endblock %}
 {% block body %}
 <form method="post">
-    <table class="bordered">
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            {% if not category %}
-            <th>Category</th>
-            {% endif %}
-            <th>Actuators</th>
-            <th>ID</th>
-            <th>Action</th>
-        </tr>
-        {% for controller in controllers %}
-        <tr>
-            <td><a 
-                href="{{url_for('automation_show_controller', controller_name=controller.Name())}}">{{controller.Name()}}</a></td>
-            <td>{{controller.TypeStr()}}</td>
-            {% if not category %}
-            <td>{{controller.Category()}}</td>
-            {% endif %}
-            <td>{{controller.ActuatorCount()}}</td>
-            <td>{{controller.ID()}}</td>
-            <td>
-            <input type="submit" name="edit-{{controller.Name()}}" 
-            value="Edit"/>
-            <input type="submit" name="del-{{controller.Name()}}" value="Delete" 
-            {% if controller.ActuatorCount() != 0 %}
-            disabled="disabled"
-            {% endif %}
-            onclick="return confirm('Are you sure you want to DELETE Controller: ' + '{{controller.Name()}}' + '?');"/>
-            </td>
-        </tr>
-    {% endfor %}
-    </table>
+    {% if controllers %}
+        <table class="bordered">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                {% if not category %}
+                <th>Category</th>
+                {% endif %}
+                <th>Actuators</th>
+                <th>ID</th>
+                <th>Action</th>
+            </tr>
+            {% for controller in controllers %}
+            <tr>
+                <td><a 
+                    href="{{url_for('automation_show_controller', controller_name=controller.Name())}}">{{controller.Name()}}</a></td>
+                <td>{{controller.TypeStr()}}</td>
+                {% if not category %}
+                <td>{{controller.Category()}}</td>
+                {% endif %}
+                <td>{{controller.ActuatorCount()}}</td>
+                <td>{{controller.ID()}}</td>
+                <td>
+                <input type="submit" name="edit-{{controller.Name()}}" 
+                value="Edit"/>
+                <input type="submit" name="del-{{controller.Name()}}" value="Delete" 
+                {% if controller.ActuatorCount() != 0 %}
+                disabled="disabled"
+                {% endif %}
+                onclick="return confirm('Are you sure you want to DELETE Controller: ' + '{{controller.Name()}}' + '?');"/>
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+        <div class="noitems">
+            No Controllers defined.
+        </div>
+    {% endif %} 
     <div id="footer">
         <br>
         <input type="submit" name="add" 

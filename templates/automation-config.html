@@ -1,16 +1,22 @@
 {% extends "automation-layout.html" %}
 {% block title %}Config{% endblock %}
 {% block body %}
-<div class="padded">
-    <dl>
-        {% for section in config.sections() %}
-            <dt>[{{section}}]</dt> 
-            {% for item in config.items(section) %} 
-                <dd>{{item[0]}}={{item[1]}}</dd>
+{% if config.sections() %}
+    <div class="padded">
+        <dl>
+            {% for section in config.sections() %}
+                <dt>[{{section}}]</dt> 
+                {% for item in config.items(section) %} 
+                    <dd>{{item[0]}}={{item[1]}}</dd>
+                {% endfor %}
+                <br>
             {% endfor %}
-            <br>
-        {% endfor %}
-    </dl>
-</div>
+        </dl>
+    </div>
+{% else %}
+    <div class="noitems">
+        No Config defined.
+    </div>
+{% endif %}
 {% endblock %}
 
